@@ -1,0 +1,19 @@
+body {
+    display: flex;
+    justify-content: center;
+}
+
+#calculator {
+    display: grid;
+    width: 350px;
+    height: 480px;
+    margin-top: 30px;
+    border: 1px solid black;
+    border-radius: 10px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+}
+
+.calcBtn {
+    border: 1px solid black;
+}
