@@ -10,6 +10,8 @@ body {
     margin-top: 60px;
     border: 1px solid;
     border-radius: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 1.5em;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(7, 1fr);
     grid-template-areas:
@@ -27,6 +29,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+
+    /* to make calculator btn text unselectable */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .funcBtn {
@@ -34,6 +45,10 @@ body {
 }
 
 .operateBtn {
+
+}
+
+.numBtn {
 
 }
 

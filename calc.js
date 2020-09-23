@@ -1,3 +1,28 @@
+// button functions ---------------------------
+
+const calcBtns = document.querySelectorAll('.calcBtn');
+const screen = document.querySelector('#screen');
+
+let operateStr = '';
+
+calcBtns.forEach(btn => {
+    btn.addEventListener('mousedown', () => {
+        btn.style.cssText = 'color: white; background-color: black';
+    });
+
+    btn.addEventListener('mouseup', () => {
+        btn.style.cssText = 'color: black background-color: white';
+
+        operateStr += btn.innerHTML;
+        screen.innerHTML = operateStr;
+    });
+});
+
+
+// end of button functions --------------------
+
+// operator functions -----------------------
+
 function add(num1, num2) {
 	return num1 + num2;
 }
@@ -35,5 +60,7 @@ function operate(operator, num1, num2) {
     // const roundedResult = Math.round(result * 1000) / 1000;
     return result;
 }
+
+// end of operator functions -------------------
 
 // console.log(operate('+', 2, 2));
