@@ -1,0 +1,36 @@
+input 8, -
+
+Store 8 and - in array: [8, -]
+Is array length less than 4? Yes
+
+input 3, -
+
+Store 3, - in array: [8, -, 3, -]
+Is array length less than 4? No
+Calculate result of first three indexes, store in first index: [5, -]
+
+input 2, =
+
+Store 2, = in array: [5, -, 2, =]
+If the last index is an '=', remove it from the array
+Calculate result of first three indexes, store in first index: [3]
+
+input -, 2
+*** ERROR, getting 0
+Store -, 2 in array: [3, -, 2]
+Calculate result of first three indexes, store in first index: [1]
+
+
+
+algorithm
+
+- enter desired number using number keys and function keys
+- press an operator button
+- store first number entered and which operator button was pressed
+- enter second number
+- either press another operator button or equals button finish equation
+- if another operator button is pressed, calculate the equation result of the 
+    1st and 2nd numbers and store it. Store the operator button pressed as well
+- if the equals button is pressed, calculate/store the result and display to screen
+- if another operator button is pressed, store the last result and operator
+

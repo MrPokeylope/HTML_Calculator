@@ -1,16 +1,27 @@
 // important variables ---------------------
 
 let inputArray = [];
-let screenStr = '';
+let inputStr = '';
 
 const calculator = document.querySelector('#calculator');
 const screen = document.querySelector('#screen');
 const calcBtns = document.querySelectorAll('.calcBtn');
+const operateBtns = document.querySelectorAll('.operateBtn');
 
-// event listener functions ---------------- 
+// setup event listener functions ---------------- 
 
-calculator.addEventListener('mouseup', updateScreen);
+// main update function for calculator
+calculator.addEventListener('mouseup', updateCalc);
 
+// highlight operate buttons with larger border when clicked
+operateBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        resetActiveOperatorBtn();
+        btn.classList.add('active');
+    });
+});
+
+// highlight every calculator button when pressed
 calcBtns.forEach(btn => {
     btn.addEventListener('mousedown', () => {
         btn.style.cssText = 'color: white; background-color: black';
@@ -27,64 +38,108 @@ function setScreen(string) {
     screen.innerHTML = string;
 }
 
-function clearScreen() {
-    screenStr = '';
-    setScreen(screenStr);
+// reset operator button border size
+function resetActiveOperatorBtn() {
+    operateBtns.forEach(btn => {
+        if(btn.classList.contains('active'))
+            btn.classList.remove('active');
+    });
+}
+
+function clear() {
+    inputArray.length = 0;
+    inputStr = '';
+    setScreen('');
+    resetActiveOperatorBtn();
 }
 
 function changeSign(num) {
     if (num === 0) return;
 
-    screenStr = -num;
-    setScreen(screenStr);
+    inputStr = -num;
+    setScreen(inputStr);
 }
 
 function getPercentage(num) {
-    screenStr = num / 100;
-    setScreen(screenStr);
+    inputStr = num / 100;
+    setScreen(inputStr);
 }
 
-function updateScreen(event) {
+function calculateResult(var1, var2) {
+    console.log('inputArray, begin calcResult: ' + inputArray);
 
+    if (var2 === '=')
+        inputArray.push(var1);
+    else
+        inputArray.push(var1, var2);
+
+    if (inputArray.length < 3) return;
+    else {
+
+        let result = operate(...inputArray);
+
+        if (inputArray.length === 3) {
+            inputArray = [result];
+        }
+        else {
+            inputArray = [inputArray.pop()];
+            inputArray.unshift(result);
+        }
+        
+        setScreen(result);
+    }
+}
+
+function numBtnUpdate(targetBtn) {
+    inputStr += targetBtn.innerHTML;
+    setScreen(inputStr);
+}
+
+function funcBtnUpdate(targetBtn) {
+
+    let numInput = parseInt(inputStr);
+
+    switch(targetBtn.id) {
+        case 'plus-minus':
+            changeSign(numInput);
+            break;
+
+        case 'percent':
+            getPercentage(numInput);
+            break;
+    }
+}
+
+function operateBtnUpdate(targetBtn) {
+    targetBtn.classList.add('selected');
+
+    // calculateResult(inputStr, buttonStr);
+
+    inputStr = '';
+    // console.log('inputArray, after calcResult: ' + inputArray);
+}
+
+function updateCalc(event) {
+
+    // if clear button pressed
     if (event.target.id === 'clear') {
-        clearScreen();
+        clear();
         return;
     }
     
-    let buttonStr = event.target.innerHTML;
     let classList = event.target.classList;
 
+    // if number button pressed
     if (classList.contains('numBtn')) {
-        screenStr += buttonStr;
-        setScreen(screenStr);
+        numBtnUpdate(event.target);
     }
-    else if (classList.contains('funcBtn') || classList.contains('operateBtn')) {
-        let input = parseInt(screenStr);
-
-        switch(event.target.id) {
-            case 'plus-minus':
-                changeSign(input);
-                break;
-
-            case 'percent':
-                getPercentage(input);
-                break;
-
-            case 'divide':
-            case 'multiply':
-            case 'subtract':
-            case 'add':
-                inputArray.push(input, buttonStr);
-                screenStr = '';
-                break;
-
-            case 'equals':
-                inputArray.push(input);
-                console.log('Before operate: ' + inputArray);
-                operate(inputArray[1], inputArray[0], inputArray[2]);
-                inputArray = [];
-                break;
-        }
+    // if function button pressed
+    else if (classList.contains('funcBtn')) {
+        funcBtnUpdate(event.target);
+    }
+    // if operate button pressed
+    else if (classList.contains('operateBtn')) {
+        funcBtnUpdate(event.target);
     }
 }
 
@@ -106,7 +161,7 @@ function divide(num1, num2) {
     return num1 / num2;
 }
 
-function operate(operator, num1, num2) {
+function operate(num1, operator, num2) {
     let result = 0;
 
     switch(operator) {
@@ -125,6 +180,5 @@ function operate(operator, num1, num2) {
     }
 
     // const roundedResult = Math.round(result * 1000) / 1000;
-    screenStr = result;
-    setScreen(result);
+    return result;
 }
