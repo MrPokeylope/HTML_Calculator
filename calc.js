@@ -1,8 +1,8 @@
 // important variables ---------------------
 
-let numArray = [];
-let operatorArray = [];
 let inputStr = '';
+const numArray = [];
+const operatorArray = [];
 
 const calculator = document.querySelector('#calculator');
 const screen = document.querySelector('#screen');
@@ -34,25 +34,28 @@ calcBtns.forEach(btn => {
 });
 
 // button functions -----------------------
-
-function setScreen(string) {
-    screen.innerHTML = string;
+function resetArrays() {
+    numArray.length = 0,
+    operatorArray.length = 0;
 }
 
 // reset operator button border size
 function resetActiveOperatorBtn() {
     operateBtns.forEach(btn => {
         if(btn.classList.contains('active'))
-            btn.classList.remove('active');
+        btn.classList.remove('active');
     });
 }
 
+function setScreen(string) {
+    screen.innerHTML = string;
+}
+
 function clear() {
-    numArray.length = 0;
-    operatorArray.length = 0;
     inputStr = '';
-    setScreen('');
+    resetArrays();
     resetActiveOperatorBtn();
+    setScreen('');
 }
 
 function changeSign(num) {
@@ -63,7 +66,16 @@ function changeSign(num) {
 }
 
 function getPercentage(num) {
+
     inputStr = num / 100;
+
+    if (inputStr < 0.000009) {
+        // let decimalPlaces = inputStr.toString().split('.')[1].length;
+
+        // if (decimalPlaces > 9)
+        inputStr = inputStr.toExponential();
+    }
+
     setScreen(inputStr);
 }
 
@@ -71,6 +83,14 @@ function performOperation() {
     inputStr = '';
 
     if (numArray.length > 1) {
+
+        // check for division by zero
+        if (operatorArray[0] === '/' && numArray[1] === 0) {
+            setScreen("You can't divide by zero!");
+            resetArrays();
+            return;
+        }
+
         let result = operate(operatorArray[0], numArray[0], numArray[1]);
         
         numArray.length = 0;
@@ -83,21 +103,27 @@ function performOperation() {
 }
 
 function numBtnUpdate(targetBtn) {
+
+    // check if user tries to input more than one decimal dot
+    if (targetBtn.id === 'dot' && inputStr.includes('.')) 
+        return;
+
     inputStr += targetBtn.innerHTML;
     setScreen(inputStr);
 }
 
 function funcBtnUpdate(targetBtn) {
 
-    let numInput = parseInt(inputStr);
-
     switch(targetBtn.id) {
         case 'plus-minus':
-            changeSign(numInput);
+            changeSign(+inputStr);
             break;
 
         case 'percent':
-            getPercentage(numInput);
+            if (numArray.length === 1 && inputStr === '')
+                getPercentage(numArray[0]);
+            else
+                getPercentage(+inputStr);
             break;
     }
 }
@@ -114,6 +140,8 @@ function operateBtnUpdate(targetBtn) {
 }
 
 function equalsBtnUpdate() {
+
+    if (inputStr === '') return;
 
     numArray.push(+inputStr);
 
