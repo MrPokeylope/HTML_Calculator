@@ -12,7 +12,7 @@ const operateBtns = document.querySelectorAll('.operateBtn');
 // setup event listener functions ---------------- 
 
 // main update function for calculator
-calculator.addEventListener('mouseup', updateCalc);
+calculator.addEventListener('click', updateCalc);
 
 // keyboard input
 window.addEventListener('keydown', (event) => {
@@ -20,7 +20,7 @@ window.addEventListener('keydown', (event) => {
     if (!key) return;
 
     key.focus();
-    key.dispatchEvent(new Event('mousedown'));
+    key.classList.add('active');
 });
 
 window.addEventListener('keyup', (event) => {
@@ -28,28 +28,21 @@ window.addEventListener('keyup', (event) => {
     if (!key) return;
 
     updateCalc(event);
-    key.dispatchEvent(new Event('mouseup'));
+    key.classList.remove('active');
+    key.dispatchEvent(new Event('click'));
 });
 
 // highlight operate buttons with larger border when clicked
 operateBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         resetActiveOperatorBtn();
-        btn.classList.add('active');
+        btn.classList.add('selected');
     });
 });
 
-// add tabIndex and highlight each calculator button when clicked
+// add tabIndex to each button to make it focusable
 calcBtns.forEach(btn => {
     btn.setAttribute('tabIndex', '0');
-
-    btn.addEventListener('mousedown', () => {
-        btn.style.cssText = 'color: white; background-color: black';
-    });
-
-    btn.addEventListener('mouseup', () => {
-        btn.style.cssText = 'color: black background-color: white';
-    });
 });
 
 // button functions -----------------------
@@ -61,8 +54,8 @@ function resetArrays() {
 // reset operator button border size
 function resetActiveOperatorBtn() {
     operateBtns.forEach(btn => {
-        if(btn.classList.contains('active'))
-        btn.classList.remove('active');
+        if(btn.classList.contains('selected'))
+        btn.classList.remove('selected');
     });
 }
 
@@ -214,25 +207,6 @@ function updateCalc(event) {
     else if (event.target.id === 'equals') {
         equalsBtnUpdate();
     }
-}
-
-function handleKeyboardInput(event) {
-
-    console.log(event.code);
-
-    // check for digits and operater chars
-    let filterRegEx = /[c\.\d\-\+\/\\*\%\r]/i;
-    
-    // if pressed key is not a digit, ignore
-    if (!filterRegEx.test(event.key)) return;
-
-    // check for multiple dots too
-
-    // figure out how to send a cal btn event when a key is pressed
-    // or use data-keys in the html to fire the event
-
-    inputStr += event.key;
-    setScreen(inputStr);
 }
 
 // math functions -----------------------

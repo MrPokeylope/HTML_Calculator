@@ -40,6 +40,11 @@ body {
     user-select: none;
 }
 
+.calcBtn:active {
+    background-color: black;
+    color: white;
+}
+
 .funcBtn {
 
 }
@@ -54,6 +59,11 @@ body {
 }
 
 .active {
+    background-color: black;
+    color: white;
+}
+
+.selected {
     border: 4px solid;
 }
 
