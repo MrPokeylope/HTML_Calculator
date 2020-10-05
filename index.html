@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>HTML Calculator</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap" rel="stylesheet"> 
 </head>
@@ -12,25 +13,25 @@
 
   <div id="calculator">
     <div id="screen"></div>
-    <div id="clear" class="calcBtn funcBtn">AC</div>
-    <div id="plus-minus" class="calcBtn funcBtn">+/-</div>
-    <div id="percent" class="calcBtn funcBtn">%</div>
-    <div id="divide" class="calcBtn operateBtn">/</div>
-    <div id="eight" class="calcBtn numBtn">8</div>
-    <div id="seven" class="calcBtn numBtn">7</div>
-    <div id="nine" class="calcBtn numBtn">9</div>
-    <div id="multiply" class="calcBtn operateBtn">x</div>
-    <div id="four" class="calcBtn numBtn">4</div>
-    <div id="five" class="calcBtn numBtn">5</div>
-    <div id="six" class="calcBtn numBtn">6</div>
-    <div id="subtract" class="calcBtn operateBtn">-</div>
-    <div id="one" class="calcBtn numBtn">1</div>
-    <div id="two" class="calcBtn numBtn">2</div>
-    <div id="three" class="calcBtn numBtn">3</div>
-    <div id="add" class="calcBtn operateBtn">+</div>
-    <div id="zero" class="calcBtn numBtn">0</div>
-    <div id="dot" class="calcBtn numBtn">.</div>
-    <div id="equals" class="calcBtn">=</div>
+    <div id="clear" class="calcBtn funcBtn" data-key="c">C</div>
+    <div id="plus-minus" class="calcBtn funcBtn" data-key="+/-">+/-</div>
+    <div id="percent" class="calcBtn funcBtn" data-key="%">%</div>
+    <div id="divide" class="calcBtn operateBtn" data-key="/">/</div>
+    <div id="eight" class="calcBtn numBtn" data-key="8">8</div>
+    <div id="seven" class="calcBtn numBtn" data-key="7">7</div>
+    <div id="nine" class="calcBtn numBtn" data-key="9">9</div>
+    <div id="multiply" class="calcBtn operateBtn" data-key="*">x</div>
+    <div id="four" class="calcBtn numBtn" data-key="4">4</div>
+    <div id="five" class="calcBtn numBtn" data-key="5">5</div>
+    <div id="six" class="calcBtn numBtn" data-key="6">6</div>
+    <div id="subtract" class="calcBtn operateBtn" data-key="-">-</div>
+    <div id="one" class="calcBtn numBtn" data-key="1">1</div>
+    <div id="two" class="calcBtn numBtn" data-key="2">2</div>
+    <div id="three" class="calcBtn numBtn" data-key="3">3</div>
+    <div id="add" class="calcBtn operateBtn" data-key="+">+</div>
+    <div id="zero" class="calcBtn numBtn" data-key="0">0</div>
+    <div id="dot" class="calcBtn numBtn" data-key=".">.</div>
+    <div id="equals" class="calcBtn" data-key="=">=</div>
   </div>
 
   <script src="calc.js"></script> 

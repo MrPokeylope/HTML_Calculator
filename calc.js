@@ -14,6 +14,23 @@ const operateBtns = document.querySelectorAll('.operateBtn');
 // main update function for calculator
 calculator.addEventListener('mouseup', updateCalc);
 
+// keyboard input
+window.addEventListener('keydown', (event) => {
+    let key = getAltKeyElement(event.key);
+    if (!key) return;
+
+    key.focus();
+    key.dispatchEvent(new Event('mousedown'));
+});
+
+window.addEventListener('keyup', (event) => {
+    const key = getAltKeyElement(event.key);
+    if (!key) return;
+
+    updateCalc(event);
+    key.dispatchEvent(new Event('mouseup'));
+});
+
 // highlight operate buttons with larger border when clicked
 operateBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -22,8 +39,10 @@ operateBtns.forEach(btn => {
     });
 });
 
-// highlight every calculator button when pressed
+// add tabIndex and highlight each calculator button when clicked
 calcBtns.forEach(btn => {
+    btn.setAttribute('tabIndex', '0');
+
     btn.addEventListener('mousedown', () => {
         btn.style.cssText = 'color: white; background-color: black';
     });
@@ -47,6 +66,25 @@ function resetActiveOperatorBtn() {
     });
 }
 
+function getAltKeyElement(key) {
+
+    switch (key) {
+        case 'Escape':
+            key = 'c';
+            break;
+
+        case 'Enter':
+            key = '='
+            break;
+
+        case 'Alt':
+            key = '+/-'
+            break;
+    }
+
+    return document.querySelector(`div [data-key='${key}']`);
+}
+
 function setScreen(string) {
     screen.innerHTML = string;
 }
@@ -68,14 +106,15 @@ function changeSign(num) {
 function getPercentage(num) {
 
     inputStr = num / 100;
+    let decimalPlaces = inputStr.toString()
+    
+    if (decimalPlaces.includes('.')) {
+        decimalPlaces = decimalPlaces.split('.')[1].length;
 
-    if (inputStr < 0.000009) {
-        // let decimalPlaces = inputStr.toString().split('.')[1].length;
-
-        // if (decimalPlaces > 9)
-        inputStr = inputStr.toExponential();
+        if (decimalPlaces > 10)
+            inputStr = inputStr.toFixed(10);
     }
-
+    
     setScreen(inputStr);
 }
 
@@ -103,7 +142,6 @@ function performOperation() {
 }
 
 function numBtnUpdate(targetBtn) {
-
     // check if user tries to input more than one decimal dot
     if (targetBtn.id === 'dot' && inputStr.includes('.')) 
         return;
@@ -152,7 +190,6 @@ function equalsBtnUpdate() {
 }
 
 function updateCalc(event) {
-
     // if clear button pressed
     if (event.target.id === 'clear') {
         clear();
@@ -177,6 +214,25 @@ function updateCalc(event) {
     else if (event.target.id === 'equals') {
         equalsBtnUpdate();
     }
+}
+
+function handleKeyboardInput(event) {
+
+    console.log(event.code);
+
+    // check for digits and operater chars
+    let filterRegEx = /[c\.\d\-\+\/\\*\%\r]/i;
+    
+    // if pressed key is not a digit, ignore
+    if (!filterRegEx.test(event.key)) return;
+
+    // check for multiple dots too
+
+    // figure out how to send a cal btn event when a key is pressed
+    // or use data-keys in the html to fire the event
+
+    inputStr += event.key;
+    setScreen(inputStr);
 }
 
 // math functions -----------------------
