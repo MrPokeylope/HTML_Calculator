@@ -1,33 +1,38 @@
 // important variables ---------------------
 
-let inputStr = '';
-const numArray = [];
-const operatorArray = [];
-
 const calculator = document.querySelector('#calculator');
 const screen = document.querySelector('#screen');
 const calcBtns = document.querySelectorAll('.calcBtn');
 const operateBtns = document.querySelectorAll('.operateBtn');
 
+let inputStr = '';
+let lastOperation = '';
+const maxScreenDigits = 11;
+const numArray = [];
+const operatorArray = [];
+
+setScreen(inputStr);
+
 // setup event listener functions ---------------- 
 
 // main update function for calculator
-calculator.addEventListener('click', updateCalc);
+calculator.addEventListener('click', (event) => { updateCalc(event.target) });
 
 // keyboard input
 window.addEventListener('keydown', (event) => {
     let key = getAltKeyElement(event.key);
     if (!key) return;
 
-    key.focus();
+    // console.log(key);
     key.classList.add('active');
+    key.dispatchEvent(new Event('click'));
+    updateCalc(key);
 });
 
 window.addEventListener('keyup', (event) => {
     const key = getAltKeyElement(event.key);
     if (!key) return;
 
-    updateCalc(event);
     key.classList.remove('active');
     key.dispatchEvent(new Event('click'));
 });
@@ -40,12 +45,12 @@ operateBtns.forEach(btn => {
     });
 });
 
-// add tabIndex to each button to make it focusable
-calcBtns.forEach(btn => {
-    btn.setAttribute('tabIndex', '0');
-});
-
 // button functions -----------------------
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function resetArrays() {
     numArray.length = 0,
     operatorArray.length = 0;
@@ -63,6 +68,7 @@ function getAltKeyElement(key) {
 
     switch (key) {
         case 'Escape':
+        case 'Backspace':
             key = 'c';
             break;
 
@@ -79,6 +85,19 @@ function getAltKeyElement(key) {
 }
 
 function setScreen(string) {
+
+    if (typeof string === 'number')
+        string = string.toString();
+
+    if (string.length === 0)
+        string = '0';
+    else if (string.length > maxScreenDigits) {
+        console.log('screen length: ' + string.length);
+        console.log('inputstr: ' + inputStr);
+        // string = string.slice(0, maxScreenDigits);
+        string = parseFloat(string).toExponential(5);
+    }
+
     screen.innerHTML = string;
 }
 
@@ -104,8 +123,8 @@ function getPercentage(num) {
     if (decimalPlaces.includes('.')) {
         decimalPlaces = decimalPlaces.split('.')[1].length;
 
-        if (decimalPlaces > 10)
-            inputStr = inputStr.toFixed(10);
+        if (decimalPlaces > maxScreenDigits)
+            inputStr = inputStr.toFixed(maxScreenDigits);
     }
     
     setScreen(inputStr);
@@ -118,8 +137,13 @@ function performOperation() {
 
         // check for division by zero
         if (operatorArray[0] === '/' && numArray[1] === 0) {
-            setScreen("You can't divide by zero!");
-            resetArrays();
+            screen.classList.toggle('blinking');
+            screen.innerHTML = "You can't divide by zero!";
+
+            sleep(3000).then( () => {
+                screen.classList.toggle('blinking');
+                clear();
+            });
             return;
         }
 
@@ -127,7 +151,7 @@ function performOperation() {
         
         numArray.length = 0;
         numArray.push(result);
-        operatorArray.shift();
+        lastOperator = operatorArray.shift();
         
         setScreen(result);
         console.log(numArray, operatorArray);
@@ -135,9 +159,14 @@ function performOperation() {
 }
 
 function numBtnUpdate(targetBtn) {
-    // check if user tries to input more than one decimal dot
-    if (targetBtn.id === 'dot' && inputStr.includes('.')) 
-        return;
+    
+    if (targetBtn.id === 'dot') {
+        // check if user tries to input more than one decimal dot
+        if (inputStr.includes('.')) return;
+        // otherwise add a zero to the input string
+        if (inputStr.length === 0)
+            inputStr = '0';
+    } 
 
     inputStr += targetBtn.innerHTML;
     setScreen(inputStr);
@@ -162,11 +191,11 @@ function funcBtnUpdate(targetBtn) {
 function operateBtnUpdate(targetBtn) {
 
     operatorArray.push(targetBtn.innerHTML);
+
     if (+inputStr !== 0)
         numArray.push(+inputStr);
 
     console.log(numArray, operatorArray);
-    
     performOperation();
 }
 
@@ -176,35 +205,38 @@ function equalsBtnUpdate() {
 
     numArray.push(+inputStr);
 
+    if (operatorArray.length === 0 && lastOperation !== '')
+        operatorArray.push(lastOperator);
+
     console.log(numArray, operatorArray);
     performOperation();
-    
     resetActiveOperatorBtn();
 }
 
-function updateCalc(event) {
+function updateCalc(button) {
+
     // if clear button pressed
-    if (event.target.id === 'clear') {
+    if (button.id === 'clear') {
         clear();
         return;
     }
     
-    let classList = event.target.classList;
+    let classList = button.classList;
 
     // if number button pressed
     if (classList.contains('numBtn')) {
-        numBtnUpdate(event.target);
+        numBtnUpdate(button);
     }
     // if function button pressed
     else if (classList.contains('funcBtn')) {
-        funcBtnUpdate(event.target);
+        funcBtnUpdate(button);
     }
     // if operate button pressed
     else if (classList.contains('operateBtn')) {
-        operateBtnUpdate(event.target);
+        operateBtnUpdate(button);
     }
     // if equals button pressed
-    else if (event.target.id === 'equals') {
+    else if (button.id === 'equals') {
         equalsBtnUpdate();
     }
 }
