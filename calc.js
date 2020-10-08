@@ -7,7 +7,7 @@ const operateBtns = Array.from(document.querySelectorAll('.operateBtn'));
 
 let inputStr = '';
 let lastOperator = '';
-let debug = true;
+let debug = false;
 const maxScreenDigits = 11;
 const numArray = [];
 const operatorArray = [];
