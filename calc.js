@@ -56,6 +56,13 @@ function resetArrays() {
     operatorArray.length = 0;
 }
 
+function clear() {
+    inputStr = '';
+    resetArrays();
+    resetActiveOperatorBtn();
+    setScreen('');
+}
+
 // reset operator button border size
 function resetActiveOperatorBtn() {
     operateBtns.forEach(btn => {
@@ -84,6 +91,51 @@ function getAltKeyElement(key) {
     return document.querySelector(`div [data-key='${key}']`);
 }
 
+function shrinkBigNumbers(numStr) {
+
+    // if number isn't larger than the screen size, return
+    if (numStr.length <= maxScreenDigits) 
+        return numStr;
+    
+    // if number doesn't contain a decimal
+    if (!numStr.includes('.')) {
+        // convert to exponential notation
+        numStr = parseInt(numStr).toExponential(5);
+    }
+    // if a number does contain a decimal
+    else {
+        let  decimalArray = numStr.split('.');
+
+        // if the whole number side is large
+        if (decimalArray[0].length >= 6) {
+            let decimalSpaceLeft = (maxScreenDigits - 1) - decimalArray[0].length;
+
+            if (decimalSpaceLeft === 0)
+                numStr = parseInt(numStr).toExponential(5);
+            else {
+                decimalArray[1] = decimalArray[1].slice(0, decimalSpaceLeft);
+                numStr = decimalArray.join('.');
+            }
+        }
+        // if the decimal side is large
+        else if (decimalArray[1].length > decimalArray[0].length) {
+
+            // if the number is really close to 0
+            if (decimalArray[1].length > 4 && decimalArray[0] === '0') {
+                // decimalArray[1] = decimalArray[1].slice(0, 7);
+                numStr = parseFloat(numStr).toPrecision(1);
+            }
+            // if the number greater than 1
+            else {
+                decimalArray[1] = decimalArray[1].slice(0, 4);
+                numStr = decimalArray.join('.');
+            }
+        }
+    }
+    
+    return numStr;
+}
+
 function setScreen(string) {
 
     if (typeof string === 'number')
@@ -91,44 +143,13 @@ function setScreen(string) {
 
     if (string.length === 0)
         string = '0';
-    else if (string.length > maxScreenDigits) {
-        console.log('screen length: ' + string.length);
-        console.log('inputstr: ' + inputStr);
-        // string = string.slice(0, maxScreenDigits);
-        string = parseFloat(string).toExponential(5);
-    }
+    else
+        string = shrinkBigNumbers(string);
 
     screen.innerHTML = string;
 }
 
-function clear() {
-    inputStr = '';
-    resetArrays();
-    resetActiveOperatorBtn();
-    setScreen('');
-}
 
-function changeSign(num) {
-    if (num === 0) return;
-
-    inputStr = -num;
-    setScreen(inputStr);
-}
-
-function getPercentage(num) {
-
-    inputStr = num / 100;
-    let decimalPlaces = inputStr.toString()
-    
-    if (decimalPlaces.includes('.')) {
-        decimalPlaces = decimalPlaces.split('.')[1].length;
-
-        if (decimalPlaces > maxScreenDigits)
-            inputStr = inputStr.toFixed(maxScreenDigits);
-    }
-    
-    setScreen(inputStr);
-}
 
 function performOperation() {
     inputStr = '';
@@ -167,6 +188,9 @@ function numBtnUpdate(targetBtn) {
         if (inputStr.length === 0)
             inputStr = '0';
     } 
+
+    // stop number overflow on screen
+    if (inputStr.length === maxScreenDigits) return;
 
     inputStr += targetBtn.innerHTML;
     setScreen(inputStr);
@@ -242,6 +266,19 @@ function updateCalc(button) {
 }
 
 // math functions -----------------------
+
+function changeSign(num) {
+    if (num === 0) return;
+
+    inputStr = -num;
+    setScreen(inputStr);
+}
+
+function getPercentage(num) {
+
+    inputStr = num / 100;
+    setScreen(inputStr);
+}
 
 function add(num1, num2) {
 	return num1 + num2;
