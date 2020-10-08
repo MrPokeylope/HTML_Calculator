@@ -52,8 +52,7 @@ body {
 }
 
 .calcBtn:active {
-    background-color: black;
-    /* color: white; */
+    background-color: black !important;
 }
 
 .funcBtn {
@@ -71,8 +70,7 @@ body {
 }
 
 .active {
-    background-color: black;
-    color: white;
+    background-color: black !important;
 }
 
 .selected {

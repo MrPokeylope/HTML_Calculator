@@ -5,14 +5,15 @@ const screen = document.querySelector('#screen');
 const calcBtns = document.querySelectorAll('.calcBtn');
 const operateBtns = Array.from(document.querySelectorAll('.operateBtn'));
 
-let inputStr = '';
+let inputStr = '0';
 let lastOperator = '';
-let debug = false;
+let lastNum = 0;
 const maxScreenDigits = 11;
 const numArray = [];
 const operatorArray = [];
 
 setScreen(inputStr);
+let debug = true;
 
 // setup event listener functions ---------------- 
 
@@ -24,7 +25,6 @@ window.addEventListener('keydown', (event) => {
     let key = getAltKeyElement(event.key);
     if (!key) return;
 
-    // console.log(key);
     key.classList.add('active');
     key.dispatchEvent(new Event('click'));
     updateCalc(key);
@@ -38,7 +38,7 @@ window.addEventListener('keyup', (event) => {
     key.dispatchEvent(new Event('click'));
 });
 
-// button functions -----------------------
+// utility functions -----------------------
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -47,18 +47,19 @@ function sleep(ms) {
 function resetArrays() {
     numArray.length = 0,
     operatorArray.length = 0;
+    lastOperator = '';
+    lastNum = 0;
 }
 
 function clear() {
-    inputStr = '';
+    inputStr = '0';
     resetArrays();
     clearActiveOperatorBtn();
-    setScreen('');
+    setScreen(inputStr);
 }
 
-// reset operator button border size
 function clearActiveOperatorBtn() {
-    let button = operateBtns.find(btn => btn.classList.contains('selected'));
+    let button = checkForActiveOperatorBtn();
     if (button) button.classList.toggle('selected');
 }
 
@@ -85,11 +86,20 @@ function getAltKeyElement(key) {
     return document.querySelector(`div [data-key='${key}']`);
 }
 
+function setScreen(string) {
+
+    if (typeof string === 'number')
+        string = string.toString();
+
+    if (string !== '0') string = shrinkBigNumbers(string);
+
+    screen.innerHTML = string;
+}
+
 function shrinkBigNumbers(numStr) {
 
     // if number isn't larger than the screen size, return
-    if (numStr.length <= maxScreenDigits) 
-        return numStr;
+    if (numStr.length <= maxScreenDigits) return numStr;
     
     // if number doesn't contain a decimal
     if (!numStr.includes('.')) {
@@ -104,9 +114,9 @@ function shrinkBigNumbers(numStr) {
         if (decimalArray[0].length >= 6) {
             let decimalSpaceLeft = (maxScreenDigits - 1) - decimalArray[0].length;
 
-            if (decimalSpaceLeft === 0)
+            if (decimalSpaceLeft === 0) {
                 numStr = parseInt(numStr).toExponential(5);
-            else {
+            } else {
                 decimalArray[1] = decimalArray[1].slice(0, decimalSpaceLeft);
                 numStr = decimalArray.join('.');
             }
@@ -117,33 +127,17 @@ function shrinkBigNumbers(numStr) {
             // if the number is really close to 0
             if (decimalArray[1].length > 4 && decimalArray[0] === '0') {
                 numStr = parseFloat(numStr).toPrecision(1);
-            }
-            // if the number greater than 1
-            else {
+            } else {
                 decimalArray[1] = decimalArray[1].slice(0, 4);
                 numStr = decimalArray.join('.');
             }
         }
     }
-    
     return numStr;
 }
 
-function setScreen(string) {
-
-    if (typeof string === 'number')
-        string = string.toString();
-
-    if (string.length === 0)
-        string = '0';
-    else
-        string = shrinkBigNumbers(string);
-
-    screen.innerHTML = string;
-}
-
 function performOperation() {
-    inputStr = '';
+    inputStr = '0';
 
     if (numArray.length > 1) {
 
@@ -152,7 +146,7 @@ function performOperation() {
             screen.classList.toggle('blinking');
             screen.innerHTML = "You can't divide by zero!";
 
-            sleep(3000).then( () => {
+            sleep(3000).then(() => {
                 screen.classList.toggle('blinking');
                 clear();
             });
@@ -161,26 +155,35 @@ function performOperation() {
 
         let result = operate(operatorArray[0], numArray[0], numArray[1]);
         
+        // save previous variables
+        lastOperator = operatorArray.shift();
+        lastNum = numArray[1];
+
         numArray.length = 0;
         numArray.push(result);
-        lastOperator = operatorArray.shift();
         
-        if (debug) 
-            console.log(numArray, operatorArray);
+        if (debug) console.log(numArray, operatorArray);
 
         setScreen(result);
     }
 }
 
+// button functions ---------------- 
+
 function numBtnUpdate(targetBtn) {
     
     if (targetBtn.id === 'dot') {
-        // check if user tries to input more than one decimal dot
+        // return if user tries to input more than one decimal dot
         if (inputStr.includes('.')) return;
-        // otherwise add a zero to the input string
-        if (inputStr.length === 0)
-            inputStr = '0';
-    } 
+        // add 0 to new dot if 0 isn't there
+        if (numArray.length === 1) inputStr = '0';
+
+    } else if (targetBtn.id === 'zero') {
+        // stop repeating zeroes
+        if (numArray.length === 0 && inputStr === '0') return;
+    }
+    // overwrite 0 with new value
+    if (inputStr === '0' && targetBtn.id !== 'dot') inputStr = '';
 
     // stop number overflow on screen
     if (inputStr.length === maxScreenDigits) return;
@@ -191,57 +194,76 @@ function numBtnUpdate(targetBtn) {
 
 function funcBtnUpdate(targetBtn) {
 
+    let targetValue = +inputStr;
+
+    if (numArray.length === 0 && targetValue === 0) return;
+    else if (numArray.length === 1 && targetValue === 0) {
+        targetValue = numArray[0];
+    }
+    
     switch(targetBtn.id) {
         case 'plus-minus':
-            changeSign(+inputStr);
+            inputStr = -targetValue;
             break;
-
+            
         case 'percent':
-            if (numArray.length === 1 && inputStr === '')
-                getPercentage(numArray[0]);
-            else
-                getPercentage(+inputStr);
+            inputStr = targetValue / 100;
             break;
     }
+
+    if (numArray.length === 1) {
+        numArray[0] = inputStr;
+        if (debug) console.log(numArray, operatorArray);
+    }
+
+    setScreen(inputStr);
 }
 
 function operateBtnUpdate(targetBtn) {
 
     let currentBtn = checkForActiveOperatorBtn();
 
-    // if there is an active btn
+    // handle operator array
     if (currentBtn) {
         operatorArray[0] = targetBtn.innerHTML;
         targetBtn.classList.toggle('selected');
         currentBtn.classList.toggle('selected');
-    }
-    // if no active btn
-    else {
+    } else {
         targetBtn.classList.toggle('selected');
         operatorArray.push(targetBtn.innerHTML);
     }
 
-    if (+inputStr !== 0)
+    // handle numArray
+    if (numArray.length === 0) {
         numArray.push(+inputStr);
+    }
 
-    if (debug) 
-        console.log(numArray, operatorArray);
+    if (debug) console.log(numArray, operatorArray);
 
     performOperation();
 }
 
 function equalsBtnUpdate() {
 
-    if (inputStr === '') return;
+    if (inputStr === '0' && numArray.length === 0) {
+        // nothing to redo, exit
+        if (lastOperator === '' && lastNum === 0) return;
 
-    numArray.push(+inputStr);
-
-    if (operatorArray.length === 0 && lastOperator !== '') {
+        numArray.push(lastNum);
         operatorArray.push(lastOperator);
+
+    } else if (numArray.length === 1 && operatorArray.length === 0) {
+        // swap out first index with lastNum and add the new input
+        numArray[0] = +inputStr;
+        numArray[1] = lastNum;
+        operatorArray.push(lastOperator);
+        
+    } else {
+        // otherwise just push last operator
+        numArray.push(+inputStr);
     }
 
-    if (debug) 
-            console.log(numArray, operatorArray);
+    if (debug) console.log(numArray, operatorArray);
 
     performOperation();
     clearActiveOperatorBtn();
@@ -276,19 +298,6 @@ function updateCalc(button) {
 }
 
 // math functions -----------------------
-
-function changeSign(num) {
-    if (num === 0) return;
-
-    inputStr = -num;
-    setScreen(inputStr);
-}
-
-function getPercentage(num) {
-
-    inputStr = num / 100;
-    setScreen(inputStr);
-}
 
 function add(num1, num2) {
 	return num1 + num2;
