@@ -3,10 +3,11 @@
 const calculator = document.querySelector('#calculator');
 const screen = document.querySelector('#screen');
 const calcBtns = document.querySelectorAll('.calcBtn');
-const operateBtns = document.querySelectorAll('.operateBtn');
+const operateBtns = Array.from(document.querySelectorAll('.operateBtn'));
 
 let inputStr = '';
 let lastOperator = '';
+let debug = true;
 const maxScreenDigits = 11;
 const numArray = [];
 const operatorArray = [];
@@ -37,14 +38,6 @@ window.addEventListener('keyup', (event) => {
     key.dispatchEvent(new Event('click'));
 });
 
-// highlight operate buttons with larger border when clicked
-operateBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        resetActiveOperatorBtn();
-        btn.classList.add('selected');
-    });
-});
-
 // button functions -----------------------
 
 function sleep(ms) {
@@ -59,16 +52,18 @@ function resetArrays() {
 function clear() {
     inputStr = '';
     resetArrays();
-    resetActiveOperatorBtn();
+    clearActiveOperatorBtn();
     setScreen('');
 }
 
 // reset operator button border size
-function resetActiveOperatorBtn() {
-    operateBtns.forEach(btn => {
-        if(btn.classList.contains('selected'))
-        btn.classList.remove('selected');
-    });
+function clearActiveOperatorBtn() {
+    let button = operateBtns.find(btn => btn.classList.contains('selected'));
+    if (button) button.classList.toggle('selected');
+}
+
+function checkForActiveOperatorBtn() {
+    return operateBtns.find(btn => btn.classList.contains('selected'))
 }
 
 function getAltKeyElement(key) {
@@ -87,7 +82,6 @@ function getAltKeyElement(key) {
             key = '+/-'
             break;
     }
-
     return document.querySelector(`div [data-key='${key}']`);
 }
 
@@ -148,8 +142,6 @@ function setScreen(string) {
     screen.innerHTML = string;
 }
 
-
-
 function performOperation() {
     inputStr = '';
 
@@ -173,8 +165,10 @@ function performOperation() {
         numArray.push(result);
         lastOperator = operatorArray.shift();
         
+        if (debug) 
+            console.log(numArray, operatorArray);
+
         setScreen(result);
-        // console.log(numArray, operatorArray);
     }
 }
 
@@ -213,12 +207,26 @@ function funcBtnUpdate(targetBtn) {
 
 function operateBtnUpdate(targetBtn) {
 
-    operatorArray.push(targetBtn.innerHTML);
+    let currentBtn = checkForActiveOperatorBtn();
+
+    // if there is an active btn
+    if (currentBtn) {
+        operatorArray[0] = targetBtn.innerHTML;
+        targetBtn.classList.toggle('selected');
+        currentBtn.classList.toggle('selected');
+    }
+    // if no active btn
+    else {
+        targetBtn.classList.toggle('selected');
+        operatorArray.push(targetBtn.innerHTML);
+    }
 
     if (+inputStr !== 0)
         numArray.push(+inputStr);
 
-    // console.log(numArray, operatorArray);
+    if (debug) 
+        console.log(numArray, operatorArray);
+
     performOperation();
 }
 
@@ -232,9 +240,11 @@ function equalsBtnUpdate() {
         operatorArray.push(lastOperator);
     }
 
-    // console.log(numArray, operatorArray);
+    if (debug) 
+            console.log(numArray, operatorArray);
+
     performOperation();
-    resetActiveOperatorBtn();
+    clearActiveOperatorBtn();
 }
 
 function updateCalc(button) {
