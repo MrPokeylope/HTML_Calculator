@@ -6,7 +6,7 @@ const calcBtns = document.querySelectorAll('.calcBtn');
 const operateBtns = document.querySelectorAll('.operateBtn');
 
 let inputStr = '';
-let lastOperation = '';
+let lastOperator = '';
 const maxScreenDigits = 11;
 const numArray = [];
 const operatorArray = [];
@@ -122,7 +122,6 @@ function shrinkBigNumbers(numStr) {
 
             // if the number is really close to 0
             if (decimalArray[1].length > 4 && decimalArray[0] === '0') {
-                // decimalArray[1] = decimalArray[1].slice(0, 7);
                 numStr = parseFloat(numStr).toPrecision(1);
             }
             // if the number greater than 1
@@ -175,7 +174,7 @@ function performOperation() {
         lastOperator = operatorArray.shift();
         
         setScreen(result);
-        console.log(numArray, operatorArray);
+        // console.log(numArray, operatorArray);
     }
 }
 
@@ -219,7 +218,7 @@ function operateBtnUpdate(targetBtn) {
     if (+inputStr !== 0)
         numArray.push(+inputStr);
 
-    console.log(numArray, operatorArray);
+    // console.log(numArray, operatorArray);
     performOperation();
 }
 
@@ -229,10 +228,11 @@ function equalsBtnUpdate() {
 
     numArray.push(+inputStr);
 
-    if (operatorArray.length === 0 && lastOperation !== '')
+    if (operatorArray.length === 0 && lastOperator !== '') {
         operatorArray.push(lastOperator);
+    }
 
-    console.log(numArray, operatorArray);
+    // console.log(numArray, operatorArray);
     performOperation();
     resetActiveOperatorBtn();
 }
